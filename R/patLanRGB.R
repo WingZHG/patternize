@@ -279,7 +279,7 @@ patLanRGB <- function(sampleList,
 
       landm <- lanArray[,,n]
 
-      par(mfrow=c(1,2))
+      par(mfrow=c(2,1))
       plot(1, type="n", xlab='', ylab='', xaxt='n', yaxt='n', axes= FALSE, bty='n')
       par(new = TRUE)
       plot(patternRaster, col='black', legend = FALSE, xaxt='n', yaxt='n', axes= FALSE, bty='n')
