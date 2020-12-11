@@ -171,13 +171,17 @@ patLanRGB <- function(sampleList,
 
     map <- apply(raster::as.array(image), 1:2, function(x) all(abs(x-RGB) < colOffset*255))
 
-    if(all(map == FALSE)){
+    if(all(is.na(map) || map == FALSE)){
       warning("The RGB range does not seem to overlap with any of the RGB values in the image")
+	  map[1] <- 1
+	  map[is.na(map)] <- 0
+
     }
 
     if(iterations > 0){
-      if(all(map == FALSE)){
+      if(all(is.na(map) || map == FALSE)){
         warning("Iterations can't be performed")
+
       }
     }
 
@@ -230,6 +234,7 @@ patLanRGB <- function(sampleList,
       }
 
       patternRaster <- raster::rasterize(mapTransformed, field = 1, r)
+	  patternRaster <- raster::flip(patternRaster, 'x')
 
       }
 
@@ -278,7 +283,6 @@ patLanRGB <- function(sampleList,
     if(plot == 'compare'){
 
       landm <- lanArray[,,n]
-
       par(mfrow=c(2,1))
       plot(1, type="n", xlab='', ylab='', xaxt='n', yaxt='n', axes= FALSE, bty='n')
       par(new = TRUE)
@@ -288,6 +292,7 @@ patLanRGB <- function(sampleList,
                                   max(landm[,1])+max(landm[,1])*cropOffset[2]/100,
                                   min(landm[,2])-min(landm[,2])*cropOffset[3]/100,
                                   max(landm[,2])+max(landm[,2])*cropOffset[4]/100)
+								  
 
       image <- raster::crop(image,rasterExt)
 
