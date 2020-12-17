@@ -168,19 +168,19 @@ patLanRGB <- function(sampleList,
         stop("You forgot to specify the RGB value")
         }
     }
-
+    
+    image[is.na(image)] <- 255
     map <- apply(raster::as.array(image), 1:2, function(x) all(abs(x-RGB) < colOffset*255))
-
-    if(all(is.na(map) || map == FALSE)){
-      warning("The RGB range does not seem to overlap with any of the RGB values in the image")
-	  map[1] <- 1
-	  map[is.na(map)] <- 0
+    
+    if(all(map == FALSE)){
+      warning(names(landList)[n], ": The RGB range does not seem to overlap with any of the RGB values in the image")
+	  
 
     }
 
     if(iterations > 0){
-      if(all(is.na(map) || map == FALSE)){
-        warning("Iterations can't be performed")
+      if(all(map == FALSE)){
+        warning(names(landList)[n], ": Iterations can't be performed")
 
       }
     }
@@ -234,7 +234,7 @@ patLanRGB <- function(sampleList,
       }
 
       patternRaster <- raster::rasterize(mapTransformed, field = 1, r)
-	  patternRaster <- raster::flip(patternRaster, 'x')
+	    patternRaster <- raster::flip(patternRaster, 'x')
 
       }
 
@@ -242,10 +242,11 @@ patLanRGB <- function(sampleList,
 
       if(transformRef == 'meanshape' || is.matrix(transformRef)){
 
-        patternRaster <- raster::extent(min(refShape[,1])-3*max(refShape[,1])*cropOffset[3]/100,
-                                        max(refShape[,1])+3*max(refShape[,1])*cropOffset[4]/100,
-                                        min(refShape[,2])-3*max(refShape[,2])*cropOffset[1]/100,
-                                        max(refShape[,2])+3*max(refShape[,2])*cropOffset[2]/100)
+        patternRaster <- raster::raster(extent(min(refShape[,1])-3*max(refShape[,1])*cropOffset[3]/100,
+                                               max(refShape[,1])+3*max(refShape[,1])*cropOffset[4]/100,
+                                               min(refShape[,2])-3*max(refShape[,2])*cropOffset[1]/100,
+                                               max(refShape[,2])+3*max(refShape[,2])*cropOffset[2]/100),
+                                        ncol = res, nrow = res, vals = rep(NA, res*res))
       }
 
       else{
@@ -283,10 +284,22 @@ patLanRGB <- function(sampleList,
     if(plot == 'compare'){
 
       landm <- lanArray[,,n]
-      par(mfrow=c(2,1))
+
+      raster_res <- raster::res(patternRaster)
+      raster_ratio <- (raster_res[1] / raster_res[2])
+
+      if (raster_ratio > 1){
+        par(mfrow=c(2,1))
+      }
+
+      else if (raster_ratio <= 1){
+        par(mfrow=c(1,2))
+      }
+      
       plot(1, type="n", xlab='', ylab='', xaxt='n', yaxt='n', axes= FALSE, bty='n')
       par(new = TRUE)
       plot(patternRaster, col='black', legend = FALSE, xaxt='n', yaxt='n', axes= FALSE, bty='n')
+
 
       rasterExt <- raster::extent(min(landm[,1])-min(landm[,1])*cropOffset[1]/100,
                                   max(landm[,1])+max(landm[,1])*cropOffset[2]/100,
