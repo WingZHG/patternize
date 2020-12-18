@@ -63,6 +63,9 @@
 patLanRGB <- function(sampleList,
                       landList,
                       RGB = NULL,
+                      RGBrange = FALSE,
+                      RGBu = NULL,
+                      RGBl = NULL,
                       sampleRGB = FALSE,
                       sampleRGBtype = 'point',
                       resampleFactor = NULL,
@@ -158,20 +161,30 @@ patLanRGB <- function(sampleList,
 
       image <- raster::stack(rrr1, rrr2, rrr3)
     }
-
-    if(sampleRGB == TRUE){
-      if(crop){imageS <- raster::crop(image, extRaster)}
-      RGB <- sampleRGB(imageS, type = sampleRGBtype)
-    }
-    else{
-      if(is.null(RGB)){
-        stop("You forgot to specify the RGB value")
-        }
-    }
     
     image[is.na(image)] <- 255
-    map <- apply(raster::as.array(image), 1:2, function(x) all(abs(x-RGB) < colOffset*255))
-    
+
+    if(RGBrange == FALSE){
+      if(sampleRGB == TRUE){
+        if(crop){imageS <- raster::crop(image, extRaster)}
+          RGB <- sampleRGB(imageS, type = sampleRGBtype)
+        }
+        else{
+          if(is.null(RGB)){
+          stop("You forgot to specify the RGB value")
+          }
+        }
+
+    map <- apply(raster::as.array(image), 1:2, function(x) all(abs(x-RGB) <= colOffset*255))
+    }
+
+    if(RGBrange == TRUE){
+      if(is.null(RGBu) || is.null(RGBl)){
+          stop("You forgot to specify the RGB range")
+      }
+      map <- apply(raster::as.array(image), 1:2, function(x) all((all(x <= (RGBu + colOffset*RGBu))) && (all(x >= (RGBl - colOffset*RGBl)))))
+    }
+
     if(all(map == FALSE)){
       warning(names(landList)[n], ": The RGB range does not seem to overlap with any of the RGB values in the image")
 	  
@@ -201,7 +214,7 @@ patLanRGB <- function(sampleList,
                     mean(na.omit(as.data.frame(mapMASK[[2]]))[,1]),
                     mean(na.omit(as.data.frame(mapMASK[[3]]))[,1]))
 
-        map <- apply(raster::as.array(image), 1:2, function(x) all(abs(x-RGBnew) < colOffset*255))
+        map <- apply(raster::as.array(image), 1:2, function(x) all(abs(x-RGBnew) <= colOffset*255))
       }
 
       mapR <- raster::raster(map)
