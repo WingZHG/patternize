@@ -247,7 +247,6 @@ patLanRGB <- function(sampleList,
       }
 
       patternRaster <- raster::rasterize(mapTransformed, field = 1, r)
-	    patternRaster <- raster::flip(patternRaster, 'x')
 
       }
 
@@ -295,7 +294,7 @@ patLanRGB <- function(sampleList,
     }
 
     if(plot == 'compare'){
-
+      
       landm <- lanArray[,,n]
 
       raster_res <- raster::res(patternRaster)
@@ -321,6 +320,8 @@ patLanRGB <- function(sampleList,
 								  
 
       image <- raster::crop(image,rasterExt)
+      image <- raster::flip(image, 'x')
+      
 
       image[is.na(image)] <- 255
       x <- as.array(image)/255
@@ -329,7 +330,7 @@ patLanRGB <- function(sampleList,
       x2 <- match(cols, uniqueCols)
       dim(x2) <- dim(x)[1:2]
       raster::image(apply(x2, 1, rev), col=uniqueCols, yaxt='n', xaxt='n')
-
+      
     }
 
     rasterList[[names(landList)[n]]] <- patternRaster
