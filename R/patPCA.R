@@ -83,6 +83,7 @@
 
 
 patPCA <- function(rList,
+                   rlist2,
                    popList,
                    colList,
                    symbolList = NULL,
@@ -141,6 +142,25 @@ patPCA <- function(rList,
     else{
       rasDF <- cbind(rasDF, ras)
     }
+  }
+
+  if(!is.null(rlist2)){
+
+    for(r in 1:length(rList2)){
+
+      rList2[[r]][is.na(rList2[[r]])] <- 0
+      ras <- raster::as.data.frame(rList2[[r]])
+      colnames(ras) <- names(rList2)[[r]]
+
+      if(r == 1){
+        rasDF2 <- ras
+      }
+      else{
+        rasDF2 <- cbind(rasDF2, ras)
+      }
+    }
+
+    rasDF <- cbind(rasDF, rasDF2)
   }
 
   groupCol <- c()
