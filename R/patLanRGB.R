@@ -84,7 +84,7 @@ patLanRGB <- function(sampleList,
                       patternsToFile = NULL){
 
   rasterList <- list()
-
+  acc_time <- 0
   if(is.null(imageIDs)){
     if(length(sampleList) != length(landList)){
       stop("sampleList is not of the same length as lanArray")
@@ -123,7 +123,7 @@ patLanRGB <- function(sampleList,
 
 
   for(n in 1:length(landList)){
-
+    start_time <- Sys.time()
     if(is.null(imageIDs)){
       image <- sampleList[[n]]
     }
@@ -319,8 +319,8 @@ patLanRGB <- function(sampleList,
                                   max(landm[,2])+max(landm[,2])*cropOffset[4]/100)
 								  
 
-      image <- raster::crop(image,rasterExt)
-      image <- raster::flip(image, 'x')
+#      image <- raster::crop(image,rasterExt)
+      image <- raster::flip(image, 'y')
       
 
       image[is.na(image)] <- 255
@@ -334,8 +334,14 @@ patLanRGB <- function(sampleList,
     }
 
     rasterList[[names(landList)[n]]] <- patternRaster
-
-    print(paste('sample', names(landList)[n], 'done and added to rasterList', sep=' '))
+    end_time <- Sys.time()
+    time_taken <- end_time - start_time
+    acc_time <- acc_time + time_taken
+    avg_time_taken <- acc_time / n
+    eta <- avg_time_taken * (length(landList) - n + 1)
+    m_eta <- as.numeric(eta) %/% 60
+    s_eta <- round(as.numeric(eta), digits = 0) %% 60
+    print(paste('sample ', n, '/', length(landList), ' ', names(landList)[n], ' done and added to rasterList - ', 'Time remaining: ', m_eta, 'm', s_eta, 's',  sep=''))
   }
 
   if(plot == 'compare' | sampleRGB){
@@ -344,7 +350,7 @@ patLanRGB <- function(sampleList,
         plot(1, type="n", xlab='', ylab='', xaxt='n', yaxt='n', axes= FALSE, bty='n')
       }
       par(new = TRUE)
-      raster::plot(rasterList[[e]], col=rgb(1,0,0,alpha=1/length(sampleList)), legend = FALSE, xaxt='n', yaxt='n', axes= FALSE, bty='n')
+      raster::plot(rasterList[[e]], col=rgb(1,0,0,alpha=1/length(sampleList)), legend = "FALSE", xaxt='n', yaxt='n', axes= FALSE, bty='n')
 
     }
   }
