@@ -83,7 +83,7 @@
 
 
 patPCA <- function(rList,
-                   rlist2,
+                   rlist2 = NULL,
                    popList,
                    colList,
                    symbolList = NULL,
